@@ -3,21 +3,12 @@
 import DatePickerComponent from "@/components/DatePicker";
 import { Select, message } from "antd";
 import moment, { Moment } from "moment";
-import { useEffect, useState, useCallback, ErrorInfo } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import styles from "./page.module.css";
 import { Chart } from "@/components/Chart";
 import { getCurrenciesSeries, getCurrencies } from "@/api/currencies";
-
-type Currency = {
-  name?: string;
-  short_code?: string;
-};
-
-type Option = {
-  value?: string;
-  label?: string;
-};
+import { ApiResponse, Currency, Error, Option } from "./types";
 
 export default function Currencies() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -56,8 +47,8 @@ export default function Currencies() {
         endDate: moment(endDate as Moment).format("YYYY-MM-DD"),
         symbols: selectedCurrency,
       });
-      const newData = Object.entries(data?.response).map(
-        ([key, value]: [string, any]) => ({
+      const newData = Object.entries(data?.response as ApiResponse).map(
+        ([key, value]) => ({
           x: key,
           y: value[selectedCurrency],
         })
