@@ -1,14 +1,16 @@
 "use client";
 
 import DatePickerComponent from "@/components/DatePicker";
-import { Select, message } from "antd";
+import { Select, message, Tooltip } from "antd";
 import moment, { Moment } from "moment";
 import { useEffect, useState, useCallback } from "react";
+import classnames from "classnames";
 
 import styles from "./page.module.css";
 import { Chart } from "@/components/Chart";
 import { getCurrenciesSeries, getCurrencies } from "@/api/currencies";
 import { ApiResponse, Currency, Option } from "./types";
+import useDeviceType from "../../../hooks/useDeviceType";
 
 export default function Currencies() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -17,6 +19,7 @@ export default function Currencies() {
   const [currencies, setCurrencies] = useState<Option[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<string>("");
   const [chartData, setChartData] = useState<{ x: string; y: number }[]>([]);
+  const { isMobile } = useDeviceType();
 
   const currencyInfo = currencies?.find(
     (item: Option) => item?.value === selectedCurrency
@@ -28,7 +31,7 @@ export default function Currencies() {
       const values = Object.values(data as Currency[])?.map(
         (item: Currency) => ({ value: item?.short_code, label: item?.name })
       );
-      setCurrencies(values);
+      setCurrencies(values.slice(0, 30));
     } catch (error: any) {
       messageApi.open({
         type: "error",
@@ -100,33 +103,64 @@ export default function Currencies() {
   return (
     <div>
       {contextHolder}
-      <div className={styles.filters}>
-        <DatePickerComponent
-          placeholder="Start date"
-          value={startDate}
-          onCalendarChange={(value) => {
-            setStartDate(value);
-          }}
-          maxDate={moment()}
-        />
-        <DatePickerComponent
-          placeholder="End date"
-          maxDate={moment()}
-          value={endDate}
-          onCalendarChange={(value) => {
-            setEndDate(value);
-          }}
-        />
-        <Select
-          options={currencies}
-          onChange={(value) => setSelectedCurrency(value)}
-          className={styles.select}
-          placeholder="Select currencies"
-        />
+      <h1>Currency Fluctuation</h1>
+      <div className={styles.headerContainer}>
+        <div>
+          <div className={styles.pageLabel}>Select dates</div>
+          <div className={styles.filters}>
+            <DatePickerComponent
+              placeholder="Start date"
+              value={startDate}
+              onCalendarChange={(value) => {
+                setStartDate(value);
+              }}
+              maxDate={moment()}
+            />
+            <DatePickerComponent
+              placeholder="End date"
+              maxDate={moment()}
+              value={endDate}
+              onCalendarChange={(value) => {
+                setEndDate(value);
+              }}
+            />
+          </div>
+        </div>
+        {isMobile ? (
+          <Select
+            options={currencies}
+            onChange={(value) => setSelectedCurrency(value)}
+            className={styles.select}
+            placeholder="Select currencies"
+          />
+        ) : (
+          <>
+            <div className={styles.pageLabel}>Select a currency</div>
+            <div className={styles.filterButtons}>
+              {currencies.map((item: Option) => {
+                const isActive = item.value === selectedCurrency;
+                return (
+                  <Tooltip key={item.value} title={item.label}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCurrency(item.value as string)}
+                      className={classnames({
+                        [styles.filterButton]: true,
+                        [styles.filterButtonActive]: isActive,
+                      })}
+                    >
+                      {item.value}
+                    </button>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
       {currencyInfo?.label && startDate && endDate && (
         <div className={styles.chartTitle}>
-          Fluctuation of the {currencyInfo?.label} aginst USD
+          Fluctuation of the {currencyInfo?.label} against USD
         </div>
       )}
       <Chart options={options} series={series} />
