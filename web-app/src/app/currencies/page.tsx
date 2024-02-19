@@ -124,7 +124,7 @@ export default function Currencies() {
           placeholder="Select currencies"
         />
       </div>
-      {currencyInfo?.label && (
+      {currencyInfo?.label && startDate && endDate && (
         <div className={styles.chartTitle}>
           Fluctuation of the {currencyInfo?.label} aginst USD
         </div>
