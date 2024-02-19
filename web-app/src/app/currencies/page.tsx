@@ -2,12 +2,12 @@
 
 import DatePickerComponent from "@/components/DatePicker";
 import { Select, message } from "antd";
-import axios from "axios";
 import moment, { Moment } from "moment";
 import { useEffect, useState, useCallback, ErrorInfo } from "react";
 
 import styles from "./page.module.css";
 import { Chart } from "@/components/Chart";
+import { getCurrenciesSeries, getCurrencies } from "@/api/currencies";
 
 type Currency = {
   name?: string;
@@ -33,15 +33,7 @@ export default function Currencies() {
 
   const handleGetCurrencies = useCallback(async () => {
     try {
-      const { data } = await axios.get(
-        `https://api.currencybeacon.com/v1/currencies`,
-        {
-          params: {
-            api_key: "O0777iMrNmxxZvHBLABEufaYLfpr4o4K",
-            type: "fiat",
-          },
-        }
-      );
+      const { data } = await getCurrencies();
       const values = Object.values(data as Currency[])?.map(
         (item: Currency) => ({ value: item?.short_code, label: item?.name })
       );
@@ -59,18 +51,11 @@ export default function Currencies() {
 
   const handleGetData = useCallback(async () => {
     try {
-      const { data } = await axios.get(
-        `https://api.currencybeacon.com/v1/timeseries`,
-        {
-          params: {
-            api_key: "O0777iMrNmxxZvHBLABEufaYLfpr4o4K",
-            start_date: moment(startDate as Moment).format("YYYY-MM-DD"),
-            end_date: moment(endDate as Moment).format("YYYY-MM-DD"),
-            base: "USD",
-            symbols: selectedCurrency,
-          },
-        }
-      );
+      const { data } = await getCurrenciesSeries({
+        startDate: moment(startDate as Moment).format("YYYY-MM-DD"),
+        endDate: moment(endDate as Moment).format("YYYY-MM-DD"),
+        symbols: selectedCurrency,
+      });
       const newData = Object.entries(data?.response).map(
         ([key, value]: [string, any]) => ({
           x: key,
@@ -90,14 +75,14 @@ export default function Currencies() {
   }, [startDate, endDate, selectedCurrency, messageApi]);
 
   useEffect(() => {
+    handleGetCurrencies();
+  }, [handleGetCurrencies]);
+
+  useEffect(() => {
     if (startDate && endDate && selectedCurrency) {
       handleGetData();
     }
   }, [selectedCurrency, startDate, endDate, handleGetData]);
-
-  useEffect(() => {
-    handleGetCurrencies();
-  }, [handleGetCurrencies]);
 
   const options = {
     chart: {
