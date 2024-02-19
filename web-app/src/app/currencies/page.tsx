@@ -8,7 +8,7 @@ import { useEffect, useState, useCallback } from "react";
 import styles from "./page.module.css";
 import { Chart } from "@/components/Chart";
 import { getCurrenciesSeries, getCurrencies } from "@/api/currencies";
-import { ApiResponse, Currency, Error, Option } from "./types";
+import { ApiResponse, Currency, Option } from "./types";
 
 export default function Currencies() {
   const [messageApi, contextHolder] = message.useMessage();
