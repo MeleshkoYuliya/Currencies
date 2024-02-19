@@ -1,0 +1,17 @@
+.select {
+  min-width: 300px;
+}
+
+.filters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.chartTitle {
+  font-size: 24px;
+  margin: 24px 0px;
+  color: rgb(2, 2, 35);
+}
